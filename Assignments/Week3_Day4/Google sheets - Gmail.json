@@ -1,0 +1,136 @@
+{
+  "name": "Google sheets - Gmail",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ghwdFGNw-SDEE9G5CQlqnA1Ccd8SZzE8k1-w5mjxGaE",
+          "mode": "list",
+          "cachedResultName": "Test spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ghwdFGNw-SDEE9G5CQlqnA1Ccd8SZzE8k1-w5mjxGaE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 707827302,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ghwdFGNw-SDEE9G5CQlqnA1Ccd8SZzE8k1-w5mjxGaE/edit#gid=707827302"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "32e0f9e7-d6a2-4a84-9fab-0f8ab705c544",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wMJq9h0GZ9qfoRWU",
+          "name": "AIAuto"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\n\nlet message = `\n<p style=\"margin: 0 0 20px 0;\">Hi,</p>\n\n<p style=\"margin: 0 0 20px 0;\">\nHere is the latest data from the sheet:\n</p>\n`;\n\nrows.forEach(row => {\n  const name = row.json.Name || '';\n  const course = row.json.Course || '';\n  const feePaid = row.json.Fee_Paid ?? '';\n\n  message += `\n<div style=\"margin-bottom: 20px;\">\n  <div>• Name: ${name}</div>\n  <div>• Course: ${course}</div>\n  <div>• Fee Paid: ${feePaid}</div>\n</div>\n`;\n});\n\nmessage += `\n<p style=\"margin: 0;\">\nRegards,<br>\nYour Automation Bot\n</p>\n`;\n\nreturn [\n  {\n    json: {\n      to: 'nandhinib2105@gmail.com',\n      subject: 'Data Summary from Google Sheet',\n      message: message\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        0
+      ],
+      "id": "ae60b8bf-27fa-47bd-90f7-c6927af1e541",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.message }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        832,
+        0
+      ],
+      "id": "da91ca9b-f7a9-4d95-9084-118ab98042df",
+      "name": "Send a message",
+      "webhookId": "3aeae9b9-2e82-44a5-acf6-d1492672bda4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "reIvu15ZMVPrCJzW",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "23c2e44d-4001-40a3-a813-ac9c55f306e8",
+      "name": "When clicking ‘Execute workflow’"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e90b6f78-b25f-4bb5-abd9-e17a58fb6bc7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b32c90803ca206181d7b1a0dc7f69b49df7a5cf441813a9d23a755a6ff01ea8d"
+  },
+  "nodeGroups": [],
+  "id": "nLfQI8qE3s6Edmv5",
+  "tags": []
+}

@@ -1,0 +1,446 @@
+{
+  "name": "Web App",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Input : {{ $json.query.message }}",
+        "options": {
+          "systemMessage": "=You are a helpful tool-calling agent. Call the appropriate tool whenever the user asks you to perform a task.\n\nMy tool mapping list:\n\nGmail - When the user asks to send an email, call this tool.\n\nGoogle Sheets - When the user asks to update, add, or modify information in a sheet, call this tool.\n\nGoogle Calendar - When the user wants to block time, schedule a meeting, create an event, or add something to their calendar, call this tool.\n\nSerpAPI - When the user asks for current, recent, latest, or internet-based information, call this tool first to research the information.\n\nGoogle Docs - When the user asks to create or update a document, call this tool after obtaining the required content.\n\nWhen a task requires multiple tools, complete the required steps in the correct order. For example:\nResearch → obtain information → create/update Google Doc.\n\nDo not stop after completing only one step when the user's request requires multiple tools.\n\nIf a tool temporarily fails, explain which tool failed and why. Do not claim that the task is impossible unless the failed tool is essential and cannot be bypassed.\n\nTELEGRAM OUTPUT RULES:\n\nWhen responding to the user, use plain text only.\n\nDo not use Markdown or HTML formatting.\nDo not use *, _, ~, backticks, HTML tags, or other formatting syntax.\nUse simple sentences and plain text.\n\nCURRENT DATE AND TIME:\n{{ $now.setZone('Asia/Kolkata').toISO() }}\n\nTIMEZONE:\nAsia/Kolkata (IST, UTC+05:30)\n\nDATE AND TIME RULES:\n\n1. Always use IST (Asia/Kolkata) when interpreting dates and times.\n\n2. The current date and time above is provided only as a reference for resolving relative dates and times. Do NOT automatically use the current time as the event time.\n\n3. When the user specifies a particular time, use that exact time.\n\n4. \"Today at 4 PM\" means today's date at 4:00 PM IST.\n\n5. \"Today at 6:30 PM\" means today's date at 6:30 PM IST.\n\n6. \"Tomorrow at 10 AM\" means tomorrow's date at 10:00 AM IST.\n\n7. \"Tomorrow at 3 PM\" means tomorrow's date at 3:00 PM IST.\n\n8. If the user says \"block my calendar at 4 PM today\", create the calendar event starting at 4:00 PM today. NEVER use the current time as the start time.\n\n9. If the user provides a duration, calculate the end time from the requested start time.\n   Example: \"Block my calendar today at 4 PM for 2 hours\"\n   → Start: 4:00 PM IST\n   → End: 6:00 PM IST\n\n10. If the user specifies only a start time and no duration or end time, use a reasonable default duration if the Google Calendar tool requires an end time.\n\n11. Before calling Google Calendar, convert relative date/time expressions such as \"today\", \"tomorrow\", \"this evening\", etc. into the correct absolute date and time.\n\n12. Never replace a user-specified time with the current time.\n\n13. Only use the current time as the event start time if the user explicitly says \"now\" or \"right now\".\n\n14. When calling Google Calendar, ensure the date, start time, end time, and timezone all correspond to the user's request.\n\nAlways prioritize the user's explicitly requested date and time over the current time.",
+          "maxIterations": 10,
+          "enableStreaming": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        304,
+        0
+      ],
+      "id": "f6f55f46-e897-460d-a480-2efc97bec99d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        144,
+        176
+      ],
+      "id": "d355ebeb-fb78-4af0-993b-e03fac4605d0",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "26ZO5puiQscqaddT",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=webapp_1"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        288,
+        224
+      ],
+      "id": "38b1263d-f576-4f6b-a7ed-456dec76ebfa",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        528,
+        224
+      ],
+      "id": "0f13096b-9459-4cf7-842d-f55dd45ff446",
+      "name": "Gmail",
+      "webhookId": "3a8bfd54-cf7d-4075-9ac5-b99ecab8566a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "reIvu15ZMVPrCJzW",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ghwdFGNw-SDEE9G5CQlqnA1Ccd8SZzE8k1-w5mjxGaE",
+          "mode": "list",
+          "cachedResultName": "Test spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ghwdFGNw-SDEE9G5CQlqnA1Ccd8SZzE8k1-w5mjxGaE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 707827302,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ghwdFGNw-SDEE9G5CQlqnA1Ccd8SZzE8k1-w5mjxGaE/edit#gid=707827302"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Student_ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Student_ID', ``, 'string') }}",
+            "Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Name', ``, 'string') }}",
+            "Email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email', ``, 'string') }}",
+            "Phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Phone', ``, 'string') }}",
+            "Course": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Course', ``, 'string') }}",
+            "Fee_Paid": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Fee_Paid', ``, 'string') }}",
+            "City": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('City', ``, 'string') }}",
+            "Enrolled_Date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Enrolled_Date', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Student_ID",
+              "displayName": "Student_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Course",
+              "displayName": "Course",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fee_Paid",
+              "displayName": "Fee_Paid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "City",
+              "displayName": "City",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Enrolled_Date",
+              "displayName": "Enrolled_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        640,
+        224
+      ],
+      "id": "58d99f6a-7281-482d-bcd1-6c5e6b7f5d68",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wMJq9h0GZ9qfoRWU",
+          "name": "AIAuto"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "nandhiniaiauto@gmail.com",
+          "mode": "list",
+          "cachedResultName": "nandhiniaiauto@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        752,
+        224
+      ],
+      "id": "b383f743-0500-42c3-b046-5085c9dc8bc5",
+      "name": "Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "kM7TpG1cYdCyAsdm",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "folderId": "default",
+        "title": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.googleDocsTool",
+      "typeVersion": 2,
+      "position": [
+        848,
+        224
+      ],
+      "id": "0d36427d-dc8b-480f-9e03-6cab1c985630",
+      "name": "Google Docs",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "5WAfiXJqRUjl8GEz",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "q": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Search_Query__q_', ``, 'string') }}",
+        "location": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Location__location_', ``, 'string') }}",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-serpapi.serpApiTool",
+      "typeVersion": 1,
+      "position": [
+        976,
+        224
+      ],
+      "id": "b777bc5e-04b5-44b8-b15d-32ec6e053d23",
+      "name": "Google search in SerpApi",
+      "credentials": {
+        "serpApi": {
+          "id": "n79apwVxR2ils9cj",
+          "name": "SerpApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Doc_ID_or_URL', ``, 'string') }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('actionFields0_Old_Text', ``, 'string') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocsTool",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        160
+      ],
+      "id": "c227508e-19bf-46cc-a2e0-062bc188e82e",
+      "name": "Update a document in Google Docs",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "5WAfiXJqRUjl8GEz",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "multiagent",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        112,
+        0
+      ],
+      "id": "f0ce5a7f-0cbd-4145-a35a-bf748377bdf4",
+      "name": "Webhook",
+      "webhookId": "73dbd6de-ee0d-4058-beb0-796b980fb8b1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Docs": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google search in SerpApi": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document in Google Docs": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "d10ef25b-6f32-46e8-a8e0-d558293b2978",
+  "meta": {
+    "instanceId": "b32c90803ca206181d7b1a0dc7f69b49df7a5cf441813a9d23a755a6ff01ea8d"
+  },
+  "nodeGroups": [],
+  "id": "3EsW9gFGdIObgBCd",
+  "tags": []
+}

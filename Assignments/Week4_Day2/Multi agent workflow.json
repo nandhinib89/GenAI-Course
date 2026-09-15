@@ -1,0 +1,320 @@
+{
+  "name": "Multi agent workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -416,
+        -80
+      ],
+      "id": "878a1483-c793-4a80-af09-dbde2f23b7eb",
+      "name": "Telegram Trigger",
+      "webhookId": "c6814803-115c-496d-a320-82a259637f4f",
+      "credentials": {
+        "telegramApi": {
+          "id": "IWTLhvcneuFB0hRk",
+          "name": "GenAI_nandhini_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Input  {{ $json.message.text }}",
+        "needsFallback": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -80,
+        -64
+      ],
+      "id": "26dbde89-8fa0-42e3-b0d8-92e729262d9a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        160
+      ],
+      "id": "9a8ffb16-af84-4ed0-a0a9-7b170a3fa9c4",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "26ZO5puiQscqaddT",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=Telegram_{{ $json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -16,
+        160
+      ],
+      "id": "ff2fd501-3c0b-4835-8b42-0bbc0722954b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        176
+      ],
+      "id": "191f9627-0a62-4235-a633-a3d5596be28e",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "w9R8c3rOSAq5kTho",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this tool when research is required.\n\nPass the complete research question or task from the user to the research agent.\nThe research agent will use its available search tool to find the required information and return the results.",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', `The complete research question or task that needs to be investigated.\n\nPass the user's research request, including the topic, timeframe, location, and any specific requirements.`, 'string') }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        96,
+        144
+      ],
+      "id": "3d46131e-ea53-4602-9428-b03288911b1f",
+      "name": "AI Agent Tool"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -48,
+        352
+      ],
+      "id": "7fd29638-86aa-4303-a06e-3cddbaecbf2c",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "26ZO5puiQscqaddT",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "q": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Search_Query__q_', `The search query to use for researching the user's question.\n\nCreate a clear, specific Google search query based on the research task.\nFor current or latest information, include relevant dates or time periods\nwhen appropriate.`, 'string') }}",
+        "location": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Location__location_', `The geographic location relevant to the search.\n\nUse the location specified by the user when applicable.\nIf the research is about India and no specific location is given, use India.`, 'string') }}",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-serpapi.serpApiTool",
+      "typeVersion": 1,
+      "position": [
+        256,
+        352
+      ],
+      "id": "2c16e92f-8671-465c-a246-f01724a7d1a2",
+      "name": "Google search in SerpApi",
+      "credentials": {
+        "serpApi": {
+          "id": "n79apwVxR2ils9cj",
+          "name": "SerpApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        288,
+        -64
+      ],
+      "id": "18e0baa4-ab75-4c7c-a72a-da0bfbff641a",
+      "name": "Send a text message",
+      "webhookId": "7a1a385f-c4b3-4f72-ae66-42439fffef32",
+      "credentials": {
+        "telegramApi": {
+          "id": "IWTLhvcneuFB0hRk",
+          "name": "GenAI_nandhini_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        112,
+        352
+      ],
+      "id": "fdd590ec-901b-4522-9102-9c227c71df21",
+      "name": "Simple Memory1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "AI Agent Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent Tool",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google search in SerpApi": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent Tool",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent Tool",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "c06c10db-39b0-44d2-87e3-e8b72c17c558",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b32c90803ca206181d7b1a0dc7f69b49df7a5cf441813a9d23a755a6ff01ea8d"
+  },
+  "nodeGroups": [],
+  "id": "5wrrcNbOO4G7c1fU",
+  "tags": []
+}
